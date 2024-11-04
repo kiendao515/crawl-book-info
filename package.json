@@ -2,6 +2,9 @@
   "name": "crawl-book-info",
   "version": "1.0.0",
   "description": "crawl book info with isbn",
+  "scripts": {
+    "start": "node index"
+  },
   "main": "index.js",
   "author": "kien",
   "license": "MIT",
