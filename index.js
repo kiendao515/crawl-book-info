@@ -54,5 +54,5 @@ app.get('/api/book/:isbn', async (req, res) => {
 })
 
 // Configuring port for APP
-app.listen(port || process.env.PORT, () => console.log(`Listening on port ${port}`))
+app.listen(3000 || process.env.PORT, () => console.log(`Listening on port ${port}`))
 
