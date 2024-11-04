@@ -1,0 +1,13 @@
+{
+  "name": "crawl-book-info",
+  "version": "1.0.0",
+  "description": "crawl book info with isbn",
+  "main": "index.js",
+  "author": "kien",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "puppeteer": "^23.6.1"
+  }
+}
