@@ -1,7 +1,8 @@
 const express = require('express');
 const puppeteer = require('puppeteer')
+const cors = require('cors');
 app = express();
-
+app.use(cors());
 
 app.get('/api/book/:isbn', async (req, res) => {
     const { isbn } = req.params;
