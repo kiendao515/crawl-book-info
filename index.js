@@ -45,6 +45,7 @@ app.get('/api/book/:isbn', async (req, res) => {
             let publisher = document.querySelector('div.media-body > dl > dd:nth-child(3) > dl > dd:nth-child(2)')?.innerText.trim();
             const description = document.querySelector('div.media-body > dl > dd:nth-child(5) > dl > dd:nth-child(2)')?.innerText.trim();
             const tags = document.querySelector('div.media-body > dl > dd:nth-child(6) > dl > dd:nth-child(2)')?.innerText.trim()
+            const des = document.querySelector('#divBibDetail727879 > div.media-body > dl > dd:nth-child(8) > dl > dd:nth-child(2)')?.innerHTML.trim()
             const yearRegex = /\b\d{4}\b$/;
             const yearMatch = publisher.match(yearRegex);
             const publisherRegex = /; (.*?), \d{4}$/;
@@ -63,7 +64,7 @@ app.get('/api/book/:isbn', async (req, res) => {
             if (pageMatch) {
                 pages = pageMatch[1];
             }
-            return { title, author, publisher: publisher, publish_year: year, page: pages, tags };
+            return { title, author, publisher: publisher, publish_year: year, page: pages, tags, description : des };
         });
 
 
