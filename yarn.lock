@@ -442,6 +442,11 @@ get-stream@^5.1.0:
   dependencies:
     pump "^3.0.0"
 
+google-translate-api-x@^10.7.1:
+  version "10.7.1"
+  resolved "https://registry.npmjs.org/google-translate-api-x/-/google-translate-api-x-10.7.1.tgz"
+  integrity sha512-OdZDS6jRWzn1woOk62aOKQ5OyVaJSA+eyc6CktOWxo36IWfstOjwG/dkvnGl3Z2Sbpmk1A+jc2WwrBiRjqaY2A==
+
 gopd@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/gopd/-/gopd-1.0.1.tgz"
