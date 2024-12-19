@@ -65,7 +65,7 @@ app.get('/api/book/:isbn', async (req, res) => {
             if (pageMatch) {
                 pages = pageMatch[1];
             }
-            return { title, author, publisher: publisher, publish_year: year, page: pages, tags, description : des };
+            return { title, author, publisher: publisher, publish_year: year, page: pages, tags, description: des };
         });
 
 
@@ -92,18 +92,19 @@ app.get('/api/book', async (req, res) => {
     const searchUrl = `https://www.goodreads.com/search?q=${encodeURIComponent(bookName)}`;
 
     try {
-        const browser = await puppeteer.launch({
-            args: [
-                "--disable-setuid-sandbox",
-                "--no-sandbox",
-                "--single-process",
-                "--no-zygote",
-            ],
-            executablePath:
-                process.env.NODE_ENV === "production"
-                    ? process.env.PUPPETEER_EXECUTABLE_PATH
-                    : puppeteer.executablePath(),
-        });
+        // const browser = await puppeteer.launch({
+        //     args: [
+        //         "--disable-setuid-sandbox",
+        //         "--no-sandbox",
+        //         "--single-process",
+        //         "--no-zygote",
+        //     ],
+        //     executablePath:
+        //         process.env.NODE_ENV === "production"
+        //             ? process.env.PUPPETEER_EXECUTABLE_PATH
+        //             : puppeteer.executablePath(),
+        // });
+        const browser = await puppeteer.launch({ headless: false })
         const page = await browser.newPage();
         await page.goto(searchUrl, { waitUntil: 'networkidle2' });
         const bookPageUrl = await page.evaluate(() => {
@@ -142,35 +143,82 @@ app.get('/api/book', async (req, res) => {
         try {
             await page.waitForSelector(showMoreButtonSelector, { timeout: 3000 });
             console.log("'Show More' button detected. Clicking...");
-            await page.click(showMoreButtonSelector);
-            await page.waitForTimeout(1000);
+            const showMore = await page.$(showMoreButtonSelector);
+            if (showMore) {
+                await showMore.click()
+                await page.waitForTimeout(1000);
+                await sleep(2000)
+                const bookDescription = await page.evaluate(() => {
+                    const descriptionElement = document.querySelector(
+                        '#__next > div.PageFrame.PageFrame--siteHeaderBanner > main > div.BookPage__gridContainer > div.BookPage__rightColumn > div.BookPage__mainContent > div.BookPageMetadataSection > div.BookPageMetadataSection__description > div > div.TruncatedContent__text.TruncatedContent__text--large.TruncatedContent__text--expanded > div > div'
+                    );
+                    return descriptionElement ? descriptionElement.innerText.trim() : 'No description available.';
+                });
+
+                const author = await page.evaluate(() => {
+                    const descriptionElement = document.querySelector(
+                    '#__next > div.PageFrame.PageFrame--siteHeaderBanner > main > div.BookPage__gridContainer > div.BookPage__rightColumn > div.BookPage__mainContent > div.BookPageMetadataSection > div.BookPageMetadataSection__contributor > h3 > div > span:nth-child(1) > a > span.ContributorLink__name'
+                    );
+                    return descriptionElement ? descriptionElement.innerText.trim() : 'No description available.';
+                });
+
+                console.log("Book description extracted:", bookDescription);
+                let d = await translateTextFree(bookDescription)
+                await browser.close();
+
+                return res.json({
+                    name: bookName,
+                    url: bookPageUrl,
+                    description: d || bookDescription,
+                    author:author
+                });
+            } else {
+                await sleep(2000)
+                const bookDescription = await page.evaluate(() => {
+                    const descriptionElement = document.querySelector(
+                        '#__next > div.PageFrame.PageFrame--siteHeaderBanner > main > div.BookPage__gridContainer > div.BookPage__rightColumn > div.BookPage__mainContent > div.BookPageMetadataSection > div.BookPageMetadataSection__description > div > div.TruncatedContent__text.TruncatedContent__text--large > div > div > span'
+                    );
+                    return descriptionElement ? descriptionElement.innerText.trim() : 'No description available.';
+                });
+
+                console.log("Book description extracted:", bookDescription);
+                let d = await translateTextFree(bookDescription)
+                await browser.close();
+
+                return res.json({
+                    name: bookName,
+                    url: bookPageUrl,
+                    description: d || bookDescription,
+                });
+            }
+
         } catch (e) {
             console.log("'Show More' button not found or not clickable.");
+            await sleep(2000)
+            const bookDescription = await page.evaluate(() => {
+                const descriptionElement = document.querySelector(
+                    '#__next > div.PageFrame.PageFrame--siteHeaderBanner > main > div.BookPage__gridContainer > div.BookPage__rightColumn > div.BookPage__mainContent > div.BookPageMetadataSection > div.BookPageMetadataSection__description > div > div.TruncatedContent__text.TruncatedContent__text--large > div > div > span'
+                );
+                return descriptionElement ? descriptionElement.innerText.trim() : 'No description available.';
+            });
+
+            console.log("Book description extracted:", bookDescription);
+            let d = await translateTextFree(bookDescription)
+            await browser.close();
+
+            return res.json({
+                name: bookName,
+                url: bookPageUrl,
+                description: d || bookDescription,
+            });
         }
-        await sleep(2000)
-        
-        const bookDescription = await page.evaluate(() => {
-            const descriptionElement = document.querySelector(
-                '#__next > div.PageFrame.PageFrame--siteHeaderBanner > main > div.BookPage__gridContainer > div.BookPage__rightColumn > div.BookPage__mainContent > div.BookPageMetadataSection > div.BookPageMetadataSection__description > div > div.TruncatedContent__text.TruncatedContent__text--large.TruncatedContent__text--expanded > div > div'
-            );
-            return descriptionElement ? descriptionElement.innerText.trim() : 'No description available.';
-        });
 
-        console.log("Book description extracted:", bookDescription);
-        let d= await translateTextFree(bookDescription)
-        await browser.close();
-
-        return res.json({
-            name: bookName,
-            url: bookPageUrl,
-            description: d || bookDescription,
-        });
     } catch (error) {
         console.error('Error while scraping:', error);
 
-        if (browser) {
-            await browser.close();
-        }
+        // if (browser) {
+        //     await browser.close();
+        // }
 
         return res.status(500).json({ error: 'Something went wrong while scraping the book data.' });
     }
