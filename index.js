@@ -5,7 +5,7 @@ app = express();
 app.use(cors());
 const translate = require('google-translate-api-x');
 
-app.get('/api/book/:isbn', async (req, res) => {
+app.get('/js/book/:isbn', async (req, res) => {
     const { isbn } = req.params;
     const url = `https://opac.nlv.gov.vn/pages/opac/wpid-search-stype-form-quick-sfield-isbn-keyword-${isbn}.html`;
 
