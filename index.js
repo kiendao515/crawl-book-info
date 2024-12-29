@@ -23,12 +23,13 @@ app.get('/js/book/:isbn', async (req, res) => {
                     ? process.env.PUPPETEER_EXECUTABLE_PATH
                     : puppeteer.executablePath(),
         });
+        // const browser = await puppeteer.launch({ headless: false })
         const page = await browser.newPage();
 
         // Điều hướng đến URL của sách với ISBN
         await page.goto(url, { waitUntil: 'networkidle2' });
 
-        const buttons = await page.$$('.btn.btn-default'); // Thay bằng class thực tế của button
+        const buttons = await page.$$('.btn.btn-default');
         for (const button of buttons) {
             const buttonText = await page.evaluate(el => el.textContent, button);
             if (buttonText.includes('Xem chi tiết')) {
@@ -46,13 +47,14 @@ app.get('/js/book/:isbn', async (req, res) => {
             let publisher = document.querySelector('div.media-body > dl > dd:nth-child(3) > dl > dd:nth-child(2)')?.innerText.trim();
             const description = document.querySelector('div.media-body > dl > dd:nth-child(5) > dl > dd:nth-child(2)')?.innerText.trim();
             const tags = document.querySelector('div.media-body > dl > dd:nth-child(6) > dl > dd:nth-child(2)')?.innerText.trim()
-            const des = document.querySelector('#divBibDetail727879 > div.media-body > dl > dd:nth-child(8) > dl > dd:nth-child(2)')?.innerHTML.trim()
+            const des = document.querySelector('div.media-body > dl > dd:nth-child(7) > dl > dd:nth-child(2)')?.innerText.trim()
             const yearRegex = /\b\d{4}\b$/;
             const yearMatch = publisher.match(yearRegex);
             const publisherRegex = /; (.*?), \d{4}$/;
             const pageRegex = /(\d+)\s*tr/;
             let year = '';
             let pages;
+            console.log(title,author,publisher, description, tags, des);
             const publisherMatch = publisher.match(publisherRegex);
             if (publisherMatch) {
                 publisher = publisherMatch[1].trim();
@@ -83,7 +85,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-app.get('/api/book', async (req, res) => {
+app.get('/js/book', async (req, res) => {
     const bookName = req.query.name;
     if (!bookName) {
         return res.status(400).json({ error: 'Book name is required!' });
